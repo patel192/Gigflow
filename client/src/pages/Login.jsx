@@ -20,7 +20,7 @@ export default function Login() {
 
     try {
       await login(form);
-      navigate("/gigs");
+      navigate("/dashboard");
     } catch (error) {
       alert("Invalid credentials");
     }

@@ -78,3 +78,14 @@ export const hireBid = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+export const getMyBids = async (req,res) => {
+  try{
+   const bids = await Bid.find({freelancerId:req.user._id}).populate("gigId","title budget status")
+   .sort({createdAt:-1});
+   res.json(bids);
+  }catch(err){
+   res.status(500).json({message:err.message});
+  }
+}

@@ -62,19 +62,6 @@ export default function GigDetails() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-
-      {/* Navbar */}
-      <nav className="flex justify-between items-center px-10 py-6 border-b border-zinc-800">
-        <Link to="/" className="text-2xl font-extrabold text-yellow-400 tracking-widest">
-          GIGFLOW_
-        </Link>
-
-        <div className="space-x-6 text-sm uppercase tracking-wider">
-          <Link to="/gigs" className="hover:text-yellow-400">Gigs</Link>
-          <Link to="/dashboard" className="hover:text-yellow-400">Dashboard</Link>
-        </div>
-      </nav>
-
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12">
 

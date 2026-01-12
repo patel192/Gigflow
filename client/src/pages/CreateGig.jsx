@@ -28,7 +28,7 @@ export default function CreateGig() {
         budget: Number(form.budget)
       });
 
-      navigate("/gigs");
+      navigate("/dashboard");
     } catch (err) {
       if (err.response?.status === 401) {
         navigate("/login");
@@ -40,19 +40,6 @@ export default function CreateGig() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-
-      {/* Navbar */}
-      <nav className="flex justify-between items-center px-10 py-6 border-b border-zinc-800">
-        <Link to="/" className="text-2xl font-extrabold text-yellow-400 tracking-widest">
-          GIGFLOW_
-        </Link>
-
-        <div className="space-x-6 text-sm uppercase tracking-wider">
-          <Link to="/gigs" className="hover:text-yellow-400">Gigs</Link>
-          <Link to="/dashboard" className="hover:text-yellow-400">Dashboard</Link>
-        </div>
-      </nav>
-
       {/* Form */}
       <div className="max-w-2xl mx-auto px-6 py-16">
         <h1 className="text-3xl font-extrabold text-yellow-400 tracking-widest mb-8">
