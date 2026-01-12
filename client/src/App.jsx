@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Gigs from "./pages/Gigs";
+import CreateGig from "./pages/CreateGig"
 function App() {
   return (
     <Routes>
@@ -11,6 +12,7 @@ function App() {
       <Route path="/register" element={<Register />}></Route>
       <Route path="/login" element={<Login />}></Route>
       <Route path="/gigs" element={<Gigs />}></Route>
+      <Route path="/create-gig" element={<CreateGig/>}></Route>
     </Routes>
   );
 }
