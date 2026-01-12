@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import bidRoutes from "./routes/bidRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
 import gigRoutes from "./routes/gigRoutes.js";
 dotenv.config();
@@ -19,9 +20,7 @@ app.use(cors({
 }));
 app.use("/api/gigs", gigRoutes);
 app.use("/api/auth", authRoutes);
-app.get("/", (req,res)=>{
-    res.send("Gigflow API running.......");
-});
+app.use("/api/bids",bidRoutes);
 app.get("/api/test-protected",protect,(req,res)=>{
     res.json({
         message:"You are authorized",
