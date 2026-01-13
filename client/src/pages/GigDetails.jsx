@@ -43,6 +43,7 @@ export default function GigDetails() {
       setSuccess("Bid submitted successfully.");
       setMessage("");
       setPrice("");
+      navigate("/dashboard/gigs")
     } catch (err) {
       if (err.response?.status === 401) {
         navigate("/login");

@@ -85,7 +85,7 @@ export const hireBid = async (req, res) => {
       );
 
       // 3. Close gig
-      gig.status = "closed";
+      gig.status = "assigned";
       await gig.save({ session });
     });
 

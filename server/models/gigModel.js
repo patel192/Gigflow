@@ -20,7 +20,7 @@ const gigSchema = new mongoose.Schema({
     },
     status:{
         type:String,
-        enum:["open","closed"],
+        enum:["open","assigned"],
         default:"open"
     }
 },{
