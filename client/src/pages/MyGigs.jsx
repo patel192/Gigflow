@@ -10,6 +10,12 @@ export default function MyGigs() {
   const [bids, setBids] = useState({});
   const [openGig, setOpenGig] = useState(null);
   const [error, setError] = useState("");
+  const [editingGig, setEditingGig] = useState(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    budget: "",
+  });
 
   const fetchMyGigs = async () => {
     try {
@@ -84,9 +90,7 @@ export default function MyGigs() {
                   <h2 className="text-xl font-bold text-yellow-400">
                     {gig.title}
                   </h2>
-                  <p className="text-zinc-500 text-sm">
-                    Status: {gig.status}
-                  </p>
+                  <p className="text-zinc-500 text-sm">Status: {gig.status}</p>
                 </div>
 
                 <button
@@ -95,7 +99,76 @@ export default function MyGigs() {
                 >
                   {openGig === gig._id ? "Hide Bids" : "View Bids"}
                 </button>
+                <button
+                  onClick={() => {
+                    setEditingGig(gig._id);
+                    setEditForm({
+                      title: gig.title,
+                      description: gig.description,
+                      budget: gig.budget,
+                    });
+                  }}
+                  className="border border-blue-500 text-blue-400 px-4 py-2 hover:bg-blue-500 hover:text-black"
+                >
+                  Edit
+                </button>
               </div>
+              {editingGig === gig._id && (
+                <div className="mt-6 border border-zinc-800 p-6 space-y-4 bg-black">
+                  <input
+                    value={editForm.title}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, title: e.target.value })
+                    }
+                    className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
+                    placeholder="Title"
+                  />
+
+                  <textarea
+                    value={editForm.description}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, description: e.target.value })
+                    }
+                    className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
+                    rows={3}
+                    placeholder="Description"
+                  />
+
+                  <input
+                    type="number"
+                    value={editForm.budget}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, budget: e.target.value })
+                    }
+                    className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
+                    placeholder="Budget"
+                  />
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={async () => {
+                        try {
+                          await api.patch(`/gigs/${gig._id}`, editForm);
+                          setEditingGig(null);
+                          fetchMyGigs();
+                        } catch {
+                          setError("Update failed");
+                        }
+                      }}
+                      className="bg-yellow-400 text-black px-4 py-2 font-bold"
+                    >
+                      Save
+                    </button>
+
+                    <button
+                      onClick={() => setEditingGig(null)}
+                      className="border border-zinc-600 px-4 py-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Animated Bids */}
               <AnimatePresence>
