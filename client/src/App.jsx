@@ -7,7 +7,7 @@ import Gigs from "./pages/Gigs";
 import CreateGig from "./pages/CreateGig";
 import GigDetails from "./pages/GigDetails";
 import DashboardLayout from "./pages/DashboardLayout";
-import MyBids from "./pages/Mybids";
+import ";
 import MyGigs  from "./pages/MyGigs";
 import HiredProject from "./pages/HiredProject";
 function App() {

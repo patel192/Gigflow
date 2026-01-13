@@ -10,7 +10,7 @@ import {
   Clock,
 } from "lucide-react";
 
-export default function MyBids() {
+export const MyBids = () => {
   const navigate = useNavigate();
   const [bids, setBids] = useState([]);
   const [error, setError] = useState("");
@@ -46,7 +46,6 @@ export default function MyBids() {
       icon: <Clock size={14} />,
     },
   };
-
   return (
     <div>
       <h1 className="text-3xl font-extrabold text-yellow-400 tracking-widest mb-10">
@@ -130,4 +129,4 @@ export default function MyBids() {
       )}
     </div>
   );
-}
+};
