@@ -9,7 +9,6 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
-
 export const MyBids = () => {
   const navigate = useNavigate();
   const [bids, setBids] = useState([]);

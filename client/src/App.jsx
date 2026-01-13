@@ -7,7 +7,7 @@ import Gigs from "./pages/Gigs";
 import CreateGig from "./pages/CreateGig";
 import GigDetails from "./pages/GigDetails";
 import DashboardLayout from "./pages/DashboardLayout";
-import MyBids  from "./pages/MyBids";
+import { MyBids } from "./pages/MyBids";
 import MyGigs  from "./pages/MyGigs";
 import HiredProject from "./pages/HiredProject";
 function App() {
@@ -22,7 +22,7 @@ function App() {
         <Route path="gigs" element={<Gigs />}></Route>
         <Route path="create-gig" element={<CreateGig />}></Route>
         <Route path="gig/:id" element={<GigDetails />}></Route>
-        <Route path="bids" element={<MyBids />}></Route>
+        <Route path="bids" element={<MyBids/>}></Route>
         <Route path="hired/:gigId" element={<HiredProject />}></Route>
       </Route>
     </Routes>
