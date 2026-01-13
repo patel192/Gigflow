@@ -4,6 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import ConfirmModal from "../components/ConfirmModal";
 import toast from "react-hot-toast";
 import api from "../api/axios";
+import {
+  Eye,
+  Pencil,
+  Trash2,
+  UserCheck,
+  IndianRupee,
+  Mail,
+  MessageSquare,
+  Save,
+  X,
+} from "lucide-react";
 
 export default function MyGigs() {
   const navigate = useNavigate();
@@ -46,22 +57,19 @@ export default function MyGigs() {
   }, []);
 
   const toggleGig = (gigId) => {
-    if (openGig === gigId) {
-      setOpenGig(null);
-    } else {
+    if (openGig === gigId) setOpenGig(null);
+    else {
       setOpenGig(gigId);
       if (!bids[gigId]) fetchBids(gigId);
     }
   };
 
-  const getHiredBid = (gigId) => {
-    if (!bids[gigId]) return null;
-    return bids[gigId].find((bid) => bid.status === "hired");
-  };
+  const getHiredBid = (gigId) =>
+    bids[gigId]?.find((b) => b.status === "hired");
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold text-yellow-400 tracking-widest mb-10">
+      <h1 className="text-3xl font-extrabold text-yellow-400 tracking-widest mb-8">
         MY GIGS
       </h1>
 
@@ -74,41 +82,42 @@ export default function MyGigs() {
       {myGigs.length === 0 ? (
         <p className="text-zinc-500">You haven't posted any gigs yet.</p>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {myGigs.map((gig) => (
             <motion.div
               key={gig._id}
               layout
-              transition={{ duration: 0.35 }}
-              className="bg-zinc-900 border border-zinc-800 p-8"
+              className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 md:p-7"
             >
               {/* Header */}
-              <div className="flex justify-between items-start gap-6">
+              <div className="flex flex-col md:flex-row justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-yellow-400">
+                  <h2 className="text-lg md:text-xl font-bold text-yellow-400">
                     {gig.title}
                   </h2>
-                  <p className="text-zinc-500 text-sm">Status: {gig.status}</p>
+                  <span className="text-xs text-zinc-500 uppercase">
+                    Status: {gig.status}
+                  </span>
                 </div>
 
-                <div className="flex gap-3">
-                  {gig.status === "assigned" ? (
-                    <button
-                      onClick={() => toggleGig(gig._id)}
-                      className="border border-green-500 text-green-400 px-4 py-2 hover:bg-green-500 hover:text-black transition"
-                    >
-                      {openGig === gig._id
-                        ? "Hide Freelancer"
-                        : "View Hired Freelancer"}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => toggleGig(gig._id)}
-                      className="border border-yellow-400 text-yellow-400 px-4 py-2 hover:bg-yellow-400 hover:text-black transition"
-                    >
-                      {openGig === gig._id ? "Hide Bids" : "View Bids"}
-                    </button>
-                  )}
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => toggleGig(gig._id)}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm border rounded-lg transition
+                      ${
+                        gig.status === "assigned"
+                          ? "border-green-500 text-green-400 hover:bg-green-500 hover:text-black"
+                          : "border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+                      }`}
+                  >
+                    <Eye size={16} />
+                    {openGig === gig._id
+                      ? "Hide"
+                      : gig.status === "assigned"
+                      ? "Freelancer"
+                      : "Bids"}
+                  </button>
 
                   <button
                     onClick={() => {
@@ -119,19 +128,94 @@ export default function MyGigs() {
                         budget: gig.budget,
                       });
                     }}
-                    className="border border-blue-500 text-blue-400 px-4 py-2 hover:bg-blue-500 hover:text-black transition"
+                    className="flex items-center gap-2 px-4 py-2 text-sm border border-blue-500 text-blue-400 rounded-lg hover:bg-blue-500 hover:text-black transition"
                   >
+                    <Pencil size={16} />
                     Edit
                   </button>
 
                   <button
                     onClick={() => setDeleteGigId(gig._id)}
-                    className="border border-red-500 text-red-400 px-4 py-2 hover:bg-red-500 hover:text-black transition"
+                    className="flex items-center gap-2 px-4 py-2 text-sm border border-red-500 text-red-400 rounded-lg hover:bg-red-500 hover:text-black transition"
                   >
+                    <Trash2 size={16} />
                     Delete
                   </button>
                 </div>
               </div>
+
+              {/* Edit Form */}
+              <AnimatePresence>
+                {editingGig === gig._id && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-6 bg-black border border-zinc-800 p-5 rounded-xl space-y-4">
+                      <input
+                        value={editForm.title}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, title: e.target.value })
+                        }
+                        className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2 rounded-lg"
+                        placeholder="Title"
+                      />
+
+                      <textarea
+                        value={editForm.description}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            description: e.target.value,
+                          })
+                        }
+                        className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2 rounded-lg"
+                        rows={3}
+                        placeholder="Description"
+                      />
+
+                      <input
+                        type="number"
+                        value={editForm.budget}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, budget: e.target.value })
+                        }
+                        className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2 rounded-lg"
+                        placeholder="Budget"
+                      />
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={async () => {
+                            try {
+                              await api.patch(`/gigs/${gig._id}`, editForm);
+                              toast.success("Gig updated successfully");
+                              setEditingGig(null);
+                              fetchMyGigs();
+                            } catch {
+                              toast.error("Update failed");
+                            }
+                          }}
+                          className="flex items-center gap-2 bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold"
+                        >
+                          <Save size={16} />
+                          Save
+                        </button>
+
+                        <button
+                          onClick={() => setEditingGig(null)}
+                          className="flex items-center gap-2 border border-zinc-600 px-4 py-2 rounded-lg"
+                        >
+                          <X size={16} />
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Bids / Hired Section */}
               <AnimatePresence>
@@ -140,57 +224,58 @@ export default function MyGigs() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
                     <div className="mt-6 space-y-4">
                       {!bids[gig._id] ? (
-                        <p className="text-zinc-500 text-sm">Loading...</p>
+                        <p className="text-zinc-500">Loading...</p>
                       ) : gig.status === "assigned" ? (
                         (() => {
                           const hired = getHiredBid(gig._id);
                           if (!hired)
                             return (
                               <p className="text-zinc-500">
-                                Hired freelancer not found.
+                                No hired freelancer found.
                               </p>
                             );
 
                           return (
-                            <div className="border border-green-500 p-6 bg-black space-y-2">
-                              <p className="text-green-400 font-bold">
-                                HIRED FREELANCER
+                            <div className="border border-green-600 bg-black p-6 rounded-xl space-y-3">
+                              <p className="text-green-400 font-bold flex items-center gap-2">
+                                <UserCheck size={18} /> HIRED FREELANCER
                               </p>
                               <p>{hired.freelancerId?.name}</p>
-                              <p className="text-zinc-400 text-sm">
+                              <p className="text-sm text-zinc-400 flex items-center gap-2">
+                                <Mail size={14} />
                                 {hired.freelancerId?.email}
                               </p>
-                              <p className="text-zinc-500 text-sm">
-                                Price: ₹{hired.price}
+                              <p className="text-sm text-zinc-400 flex items-center gap-2">
+                                <IndianRupee size={14} />
+                                {hired.price}
                               </p>
-                              <p className="text-zinc-500 text-sm">
-                                Message: {hired.message}
+                              <p className="text-sm text-zinc-500 flex items-center gap-2">
+                                <MessageSquare size={14} />
+                                {hired.message}
                               </p>
                             </div>
                           );
                         })()
                       ) : bids[gig._id].length === 0 ? (
-                        <p className="text-zinc-500 text-sm">No bids yet.</p>
+                        <p className="text-zinc-500">No bids yet.</p>
                       ) : (
                         bids[gig._id].map((bid) => (
-                          <motion.div
+                          <div
                             key={bid._id}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="border border-zinc-800 p-5 flex justify-between items-center"
+                            className="border border-zinc-800 bg-black p-4 rounded-xl flex flex-col md:flex-row justify-between gap-4"
                           >
                             <div>
-                              <p className="text-sm text-zinc-400">
+                              <p className="text-zinc-300 font-medium">
                                 {bid.freelancerId?.name}
                               </p>
-                              <p>{bid.message}</p>
                               <p className="text-zinc-500 text-sm">
+                                {bid.message}
+                              </p>
+                              <p className="text-xs text-zinc-600">
                                 ₹{bid.price} — {bid.status}
                               </p>
                             </div>
@@ -203,12 +288,12 @@ export default function MyGigs() {
                                     gigId: gig._id,
                                   })
                                 }
-                                className="bg-yellow-400 text-black font-bold px-4 py-2"
+                                className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold hover:bg-yellow-300"
                               >
                                 HIRE
                               </button>
                             )}
-                          </motion.div>
+                          </div>
                         ))
                       )}
                     </div>

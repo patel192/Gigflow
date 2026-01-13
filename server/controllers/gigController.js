@@ -31,6 +31,23 @@ export const getMyGigs = async (req, res) => {
     });
   }
 };
+export const getGigById = async (req, res) => {
+  try {
+    const gig = await Gig.findById(req.params.id).populate(
+      "ownerId",
+      "name email"
+    );
+
+    if (!gig) {
+      return res.status(404).json({ message: "Gig not found" });
+    }
+
+    res.json(gig);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const updateGig = async (req, res) => {
   const { title, description, budget } = req.body;
   try {
