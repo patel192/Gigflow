@@ -34,7 +34,9 @@ export default function MyGigs() {
     try {
       await api.patch(`/bids/${bidId}/hire`);
       alert("Freelancer hired successfully.");
+
       fetchMyGigs();
+      fetchBids();
     } catch {
       setError("Hiring failed.");
     }
