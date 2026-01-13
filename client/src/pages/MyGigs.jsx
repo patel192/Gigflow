@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ConfirmModal from "../components/ConfirmModal";
 import toast from "react-hot-toast";
 import api from "../api/axios";
+
 export default function MyGigs() {
   const navigate = useNavigate();
 
@@ -40,17 +41,6 @@ export default function MyGigs() {
     }
   };
 
-  const hireBid = async (bidId, gigId) => {
-    try {
-      await api.patch(`/bids/${bidId}/hire`);
-      toast.success("Freelancer hired successfully");
-      fetchMyGigs();
-      fetchBids(gigId);
-    } catch {
-      toast.error("Hiring failed");
-    }
-  };
-
   useEffect(() => {
     fetchMyGigs();
   }, []);
@@ -62,6 +52,11 @@ export default function MyGigs() {
       setOpenGig(gigId);
       if (!bids[gigId]) fetchBids(gigId);
     }
+  };
+
+  const getHiredBid = (gigId) => {
+    if (!bids[gigId]) return null;
+    return bids[gigId].find((bid) => bid.status === "hired");
   };
 
   return (
@@ -84,7 +79,7 @@ export default function MyGigs() {
             <motion.div
               key={gig._id}
               layout
-              transition={{ duration: 0.35, ease: "easeInOut" }}
+              transition={{ duration: 0.35 }}
               className="bg-zinc-900 border border-zinc-800 p-8"
             >
               {/* Header */}
@@ -96,14 +91,24 @@ export default function MyGigs() {
                   <p className="text-zinc-500 text-sm">Status: {gig.status}</p>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => toggleGig(gig._id)}
-                    className="border border-yellow-400 text-yellow-400 px-4 py-2 hover:bg-yellow-400 hover:text-black transition"
-                  >
-                    {openGig === gig._id ? "Hide Bids" : "View Bids"}
-                  </button>
+                  {gig.status === "assigned" ? (
+                    <button
+                      onClick={() => toggleGig(gig._id)}
+                      className="border border-green-500 text-green-400 px-4 py-2 hover:bg-green-500 hover:text-black transition"
+                    >
+                      {openGig === gig._id
+                        ? "Hide Freelancer"
+                        : "View Hired Freelancer"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => toggleGig(gig._id)}
+                      className="border border-yellow-400 text-yellow-400 px-4 py-2 hover:bg-yellow-400 hover:text-black transition"
+                    >
+                      {openGig === gig._id ? "Hide Bids" : "View Bids"}
+                    </button>
+                  )}
 
                   <button
                     onClick={() => {
@@ -128,89 +133,47 @@ export default function MyGigs() {
                 </div>
               </div>
 
-              {/* Edit Form */}
-              {editingGig === gig._id && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-6 border border-zinc-800 p-6 space-y-4 bg-black">
-                    <input
-                      value={editForm.title}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, title: e.target.value })
-                      }
-                      className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
-                      placeholder="Title"
-                    />
-
-                    <textarea
-                      value={editForm.description}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          description: e.target.value,
-                        })
-                      }
-                      className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
-                      rows={3}
-                      placeholder="Description"
-                    />
-
-                    <input
-                      type="number"
-                      value={editForm.budget}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, budget: e.target.value })
-                      }
-                      className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
-                      placeholder="Budget"
-                    />
-
-                    <div className="flex gap-3">
-                      <button
-                        onClick={async () => {
-                          try {
-                            await api.patch(`/gigs/${gig._id}`, editForm);
-                            toast.success("Gig updated successfully");
-                            setEditingGig(null);
-                            fetchMyGigs();
-                          } catch {
-                            toast.error("Update failed");
-                          }
-                        }}
-                        className="bg-yellow-400 text-black px-4 py-2 font-bold hover:bg-yellow-300"
-                      >
-                        Save
-                      </button>
-
-                      <button
-                        onClick={() => setEditingGig(null)}
-                        className="border border-zinc-600 px-4 py-2 hover:bg-zinc-800"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Bids Section */}
+              {/* Bids / Hired Section */}
               <AnimatePresence>
                 {openGig === gig._id && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.35 }}
+                    transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
                     <div className="mt-6 space-y-4">
                       {!bids[gig._id] ? (
-                        <p className="text-zinc-500 text-sm">Loading bids...</p>
+                        <p className="text-zinc-500 text-sm">Loading...</p>
+                      ) : gig.status === "assigned" ? (
+                        (() => {
+                          const hired = getHiredBid(gig._id);
+                          if (!hired)
+                            return (
+                              <p className="text-zinc-500">
+                                Hired freelancer not found.
+                              </p>
+                            );
+
+                          return (
+                            <div className="border border-green-500 p-6 bg-black space-y-2">
+                              <p className="text-green-400 font-bold">
+                                HIRED FREELANCER
+                              </p>
+                              <p>{hired.freelancerId?.name}</p>
+                              <p className="text-zinc-400 text-sm">
+                                {hired.freelancerId?.email}
+                              </p>
+                              <p className="text-zinc-500 text-sm">
+                                Price: ₹{hired.price}
+                              </p>
+                              <p className="text-zinc-500 text-sm">
+                                Message: {hired.message}
+                              </p>
+                            </div>
+                          );
+                        })()
                       ) : bids[gig._id].length === 0 ? (
                         <p className="text-zinc-500 text-sm">No bids yet.</p>
                       ) : (
@@ -219,14 +182,14 @@ export default function MyGigs() {
                             key={bid._id}
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.25 }}
+                            transition={{ duration: 0.2 }}
                             className="border border-zinc-800 p-5 flex justify-between items-center"
                           >
                             <div>
                               <p className="text-sm text-zinc-400">
-                                {bid.freelancerId?.name || "Freelancer"}
+                                {bid.freelancerId?.name}
                               </p>
-                              <p className="text-white">{bid.message}</p>
+                              <p>{bid.message}</p>
                               <p className="text-zinc-500 text-sm">
                                 ₹{bid.price} — {bid.status}
                               </p>
@@ -240,7 +203,7 @@ export default function MyGigs() {
                                     gigId: gig._id,
                                   })
                                 }
-                                className="bg-yellow-400 text-black font-bold px-4 py-2 hover:bg-yellow-300"
+                                className="bg-yellow-400 text-black font-bold px-4 py-2"
                               >
                                 HIRE
                               </button>
@@ -257,11 +220,11 @@ export default function MyGigs() {
         </div>
       )}
 
-      {/* Confirm Delete Modal */}
+      {/* Delete Modal */}
       <ConfirmModal
         isOpen={!!deleteGigId}
         title="Delete Gig"
-        message="Are you sure you want to delete this gig? This action cannot be undone."
+        message="Are you sure you want to delete this gig?"
         onCancel={() => setDeleteGigId(null)}
         onConfirm={async () => {
           try {
@@ -274,15 +237,17 @@ export default function MyGigs() {
           }
         }}
       />
+
+      {/* Hire Modal */}
       <ConfirmModal
         isOpen={!!hireData}
         title="Hire Freelancer"
-        message="Are you sure you want to hire this freelancer? This will close the gig and reject all other bids."
+        message="This will close the gig and reject other bids. Continue?"
         onCancel={() => setHireData(null)}
         onConfirm={async () => {
           try {
             await api.patch(`/bids/${hireData.bidId}/hire`);
-            toast.success("Freelancer hired successfully");
+            toast.success("Freelancer hired");
             setHireData(null);
             fetchMyGigs();
             fetchBids(hireData.gigId);
