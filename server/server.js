@@ -15,9 +15,21 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: "https://gigflow-frontend-gamma.vercel.app",
-    credentials: true
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "https://gigflow-frontend-gamma.vercel.app"
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
 }));
+
 app.use("/api/gigs", gigRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/bids",bidRoutes);
