@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
-
+import toast from "react-hot-toast";
 export default function CreateGig() {
   const navigate = useNavigate();
 
@@ -27,13 +27,13 @@ export default function CreateGig() {
         description: form.description,
         budget: Number(form.budget)
       });
-
+      toast.success("Gig Posted Successfully")
       navigate("/dashboard");
     } catch (err) {
       if (err.response?.status === 401) {
         navigate("/login");
       } else {
-        setError("Failed to create gig. Try again.");
+        toast.error("Failed to create Gig, Please try again Later")
       }
     }
   };

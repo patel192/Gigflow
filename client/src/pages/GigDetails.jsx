@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
-
+import toast from "react-hot-toast";
 export default function GigDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function GigDetails() {
       const found = res.data.find((g) => g._id === id);
       setGig(found);
     } catch (err) {
-      console.error("Failed to fetch gig");
+      toast.error(err.response?.data?.message || "Error to Load Gig")
     }
   };
 
@@ -39,7 +39,7 @@ export default function GigDetails() {
         message,
         price: Number(price)
       });
-
+      toast.success("Bid Submitted");
       setSuccess("Bid submitted successfully.");
       setMessage("");
       setPrice("");
@@ -47,6 +47,7 @@ export default function GigDetails() {
       if (err.response?.status === 401) {
         navigate("/login");
       } else {
+        toast.error("Failed to post bid, Please try again later")
         setError("Failed to submit bid.");
       }
     }

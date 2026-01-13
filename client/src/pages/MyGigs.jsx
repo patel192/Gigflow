@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import ConfirmModal from "../components/ConfirmModal";
 import toast from "react-hot-toast";
 import api from "../api/axios";
-
 export default function MyGigs() {
   const navigate = useNavigate();
 
