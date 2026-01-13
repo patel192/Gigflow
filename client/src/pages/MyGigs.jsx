@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import ConfirmModal from "../components/ConfirmModal";
+import toast from "react-hot-toast";
 import api from "../api/axios";
 
 export default function MyGigs() {
@@ -10,6 +12,7 @@ export default function MyGigs() {
   const [bids, setBids] = useState({});
   const [openGig, setOpenGig] = useState(null);
   const [editingGig, setEditingGig] = useState(null);
+  const [deleteGigId, setDeleteGigId] = useState(null);
   const [error, setError] = useState("");
 
   const [editForm, setEditForm] = useState({
@@ -33,18 +36,18 @@ export default function MyGigs() {
       const res = await api.get(`/bids/${gigId}`);
       setBids((prev) => ({ ...prev, [gigId]: res.data }));
     } catch {
-      setError("Failed to load bids.");
+      toast.error("Failed to load bids");
     }
   };
 
   const hireBid = async (bidId, gigId) => {
     try {
       await api.patch(`/bids/${bidId}/hire`);
-      alert("Freelancer hired successfully.");
+      toast.success("Freelancer hired successfully");
       fetchMyGigs();
       fetchBids(gigId);
     } catch {
-      setError("Hiring failed.");
+      toast.error("Hiring failed");
     }
   };
 
@@ -95,7 +98,7 @@ export default function MyGigs() {
                   </p>
                 </div>
 
-                {/* Actions */}
+                {/* Action Buttons */}
                 <div className="flex gap-3">
                   <button
                     onClick={() => toggleGig(gig._id)}
@@ -119,19 +122,7 @@ export default function MyGigs() {
                   </button>
 
                   <button
-                    onClick={async () => {
-                      const confirmDelete = window.confirm(
-                        "Are you sure you want to delete this gig?"
-                      );
-                      if (!confirmDelete) return;
-
-                      try {
-                        await api.delete(`/gigs/${gig._id}`);
-                        fetchMyGigs();
-                      } catch {
-                        setError("Delete failed");
-                      }
-                    }}
+                    onClick={() => setDeleteGigId(gig._id)}
                     className="border border-red-500 text-red-400 px-4 py-2 hover:bg-red-500 hover:text-black transition"
                   >
                     Delete
@@ -186,10 +177,11 @@ export default function MyGigs() {
                         onClick={async () => {
                           try {
                             await api.patch(`/gigs/${gig._id}`, editForm);
+                            toast.success("Gig updated successfully");
                             setEditingGig(null);
                             fetchMyGigs();
                           } catch {
-                            setError("Update failed");
+                            toast.error("Update failed");
                           }
                         }}
                         className="bg-yellow-400 text-black px-4 py-2 font-bold hover:bg-yellow-300"
@@ -244,9 +236,7 @@ export default function MyGigs() {
 
                             {bid.status === "pending" && (
                               <button
-                                onClick={() =>
-                                  hireBid(bid._id, gig._id)
-                                }
+                                onClick={() => hireBid(bid._id, gig._id)}
                                 className="bg-yellow-400 text-black font-bold px-4 py-2 hover:bg-yellow-300"
                               >
                                 HIRE
@@ -263,6 +253,24 @@ export default function MyGigs() {
           ))}
         </div>
       )}
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={!!deleteGigId}
+        title="Delete Gig"
+        message="Are you sure you want to delete this gig? This action cannot be undone."
+        onCancel={() => setDeleteGigId(null)}
+        onConfirm={async () => {
+          try {
+            await api.delete(`/gigs/${deleteGigId}`);
+            toast.success("Gig deleted");
+            setDeleteGigId(null);
+            fetchMyGigs();
+          } catch {
+            toast.error("Delete failed");
+          }
+        }}
+      />
     </div>
   );
 }
