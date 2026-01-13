@@ -13,6 +13,7 @@ export default function MyGigs() {
   const [openGig, setOpenGig] = useState(null);
   const [editingGig, setEditingGig] = useState(null);
   const [deleteGigId, setDeleteGigId] = useState(null);
+  const [hireData, setHireData] = useState(null);
   const [error, setError] = useState("");
 
   const [editForm, setEditForm] = useState({
@@ -93,9 +94,7 @@ export default function MyGigs() {
                   <h2 className="text-xl font-bold text-yellow-400">
                     {gig.title}
                   </h2>
-                  <p className="text-zinc-500 text-sm">
-                    Status: {gig.status}
-                  </p>
+                  <p className="text-zinc-500 text-sm">Status: {gig.status}</p>
                 </div>
 
                 {/* Action Buttons */}
@@ -236,7 +235,12 @@ export default function MyGigs() {
 
                             {bid.status === "pending" && (
                               <button
-                                onClick={() => hireBid(bid._id, gig._id)}
+                                onClick={() =>
+                                  setHireData({
+                                    bidId: bid._id,
+                                    gigId: gig._id,
+                                  })
+                                }
                                 className="bg-yellow-400 text-black font-bold px-4 py-2 hover:bg-yellow-300"
                               >
                                 HIRE
@@ -268,6 +272,23 @@ export default function MyGigs() {
             fetchMyGigs();
           } catch {
             toast.error("Delete failed");
+          }
+        }}
+      />
+      <ConfirmModal
+        isOpen={!!hireData}
+        title="Hire Freelancer"
+        message="Are you sure you want to hire this freelancer? This will close the gig and reject all other bids."
+        onCancel={() => setHireData(null)}
+        onConfirm={async () => {
+          try {
+            await api.patch(`/bids/${hireData.bidId}/hire`);
+            toast.success("Freelancer hired successfully");
+            setHireData(null);
+            fetchMyGigs();
+            fetchBids(hireData.gigId);
+          } catch {
+            toast.error("Hiring failed");
           }
         }}
       />
