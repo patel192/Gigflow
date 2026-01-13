@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Bid from "../models/bidModel.js";
 import Gig from "../models/gigModel.js";
 
@@ -51,41 +52,60 @@ export const getBidsForGig = async (req, res) => {
 };
 
 export const hireBid = async (req, res) => {
+  const session = await mongoose.startSession();
+
   try {
-    const bid = await Bid.findById(req.params.bidId).populate("gigId");
+    await session.withTransaction(async () => {
+      const bid = await Bid.findById(req.params.bidId).session(session);
 
-    if (!bid) return res.status(404).json({ message: "Bid not found" });
+      if (!bid) {
+        throw new Error("Bid not found");
+      }
 
-    const gig = bid.gigId;
-    if (gig.ownerId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
-    if (gig.status === "assigned") {
-      return res.status(400).json({ message: "Gig already assigned" });
-    }
-    bid.status = "hired";
-    await bid.save();
+      const gig = await Gig.findById(bid.gigId).session(session);
 
-    await Bid.updateMany(
-      { gigId: gig._id, _id: { $ne: bid._id } },
-      { status: "rejected" }
-    );
+      if (!gig) {
+        throw new Error("Gig not found");
+      }
 
-    gig.status = "assigned";
-    await gig.save();
-    res.json({ message: "Freelancer Hired successfully" });
-  } catch (err) {
+      // Only owner can hire
+      if (gig.ownerId.toString() !== req.user._id.toString()) {
+        throw new Error("Not authorized");
+      }
+
+      // 1. Hire selected bid
+      bid.status = "hired";
+      await bid.save({ session });
+
+      // 2. Reject others
+      await Bid.updateMany(
+        { gigId: gig._id, _id: { $ne: bid._id } },
+        { $set: { status: "rejected" } },
+        { session }
+      );
+
+      // 3. Close gig
+      gig.status = "closed";
+      await gig.save({ session });
+    });
+
+    session.endSession();
+    res.json({ message: "Freelancer hired successfully (transaction-safe)" });
+
+  } catch (error) {
+    session.endSession();
+    console.error("TRANSACTION ERROR:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-
-export const getMyBids = async (req,res) => {
-  try{
-   const bids = await Bid.find({freelancerId:req.user._id}).populate("gigId","title budget status")
-   .sort({createdAt:-1});
-   res.json(bids);
-  }catch(err){
-   res.status(500).json({message:err.message});
+export const getMyBids = async (req, res) => {
+  try {
+    const bids = await Bid.find({ freelancerId: req.user._id })
+      .populate("gigId", "title budget status")
+      .sort({ createdAt: -1 });
+    res.json(bids);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-}
+};
