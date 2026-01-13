@@ -31,26 +31,26 @@ export const getMyGigs = async (req, res) => {
     });
   }
 };
-export const updateGig = async (req,res) => {
-  const {title,description,budget} = req.body;
-  try{
-  const gig = await Gig.findById(req.params.id);
-  if(!gig){
-    return res.status(404).json({message:"Gig Not Found"});
-  }
-  if(gig.ownerId.toString() !== req.user._id.toString()){
-    return res.status(403).json({message:"Not Authrized"});
-  }
-  gig.title = title || gig.title;
-  gig.description = description || gig.description;
-  gig.budget = budget || gig.budget;
+export const updateGig = async (req, res) => {
+  const { title, description, budget } = req.body;
+  try {
+    const gig = await Gig.findById(req.params.id);
+    if (!gig) {
+      return res.status(404).json({ message: "Gig Not Found" });
+    }
+    if (gig.ownerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not Authrized" });
+    }
+    gig.title = title || gig.title;
+    gig.description = description || gig.description;
+    gig.budget = budget || gig.budget;
 
-  const updatedGig = await gig.save();
-  res.json(updatedGig);
-  }catch(err){
-res.status(500).json({message:err.message});
+    const updatedGig = await gig.save();
+    res.json(updatedGig);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-}
+};
 export const getGigs = async (req, res) => {
   try {
     const keyword = req.query.search
@@ -62,5 +62,20 @@ export const getGigs = async (req, res) => {
     res.status(200).json(gigs);
   } catch (err) {
     res.status(500).json({ message: "Server Error" });
+  }
+};
+export const deleteGig = async (req, res) => {
+  try {
+    const gig = await Gig.findById(req.params.id);
+    if (!gig) {
+      res.status(404).json({ message: "Gig Not Found" });
+    }
+    if (gig.ownerId.toString() !== req.user._id.toString()) {
+      res.status(403).json({ message: "Not Authorized" });
+    }
+    await gig.deleteOne();
+    res.json({ message: "Gig Deleted Successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

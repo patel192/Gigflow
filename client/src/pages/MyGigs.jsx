@@ -9,8 +9,9 @@ export default function MyGigs() {
   const [myGigs, setMyGigs] = useState([]);
   const [bids, setBids] = useState({});
   const [openGig, setOpenGig] = useState(null);
-  const [error, setError] = useState("");
   const [editingGig, setEditingGig] = useState(null);
+  const [error, setError] = useState("");
+
   const [editForm, setEditForm] = useState({
     title: "",
     description: "",
@@ -36,13 +37,12 @@ export default function MyGigs() {
     }
   };
 
-  const hireBid = async (bidId) => {
+  const hireBid = async (bidId, gigId) => {
     try {
       await api.patch(`/bids/${bidId}/hire`);
       alert("Freelancer hired successfully.");
-
       fetchMyGigs();
-      fetchBids();
+      fetchBids(gigId);
     } catch {
       setError("Hiring failed.");
     }
@@ -81,103 +81,141 @@ export default function MyGigs() {
             <motion.div
               key={gig._id}
               layout
-              transition={{ duration: 0.4, ease: "easeInOut" }}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
               className="bg-zinc-900 border border-zinc-800 p-8"
             >
               {/* Header */}
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-start gap-6">
                 <div>
                   <h2 className="text-xl font-bold text-yellow-400">
                     {gig.title}
                   </h2>
-                  <p className="text-zinc-500 text-sm">Status: {gig.status}</p>
+                  <p className="text-zinc-500 text-sm">
+                    Status: {gig.status}
+                  </p>
                 </div>
 
-                <button
-                  onClick={() => toggleGig(gig._id)}
-                  className="border border-yellow-400 text-yellow-400 px-4 py-2 hover:bg-yellow-400 hover:text-black transition"
-                >
-                  {openGig === gig._id ? "Hide Bids" : "View Bids"}
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingGig(gig._id);
-                    setEditForm({
-                      title: gig.title,
-                      description: gig.description,
-                      budget: gig.budget,
-                    });
-                  }}
-                  className="border border-blue-500 text-blue-400 px-4 py-2 hover:bg-blue-500 hover:text-black"
-                >
-                  Edit
-                </button>
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => toggleGig(gig._id)}
+                    className="border border-yellow-400 text-yellow-400 px-4 py-2 hover:bg-yellow-400 hover:text-black transition"
+                  >
+                    {openGig === gig._id ? "Hide Bids" : "View Bids"}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setEditingGig(gig._id);
+                      setEditForm({
+                        title: gig.title,
+                        description: gig.description,
+                        budget: gig.budget,
+                      });
+                    }}
+                    className="border border-blue-500 text-blue-400 px-4 py-2 hover:bg-blue-500 hover:text-black transition"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      const confirmDelete = window.confirm(
+                        "Are you sure you want to delete this gig?"
+                      );
+                      if (!confirmDelete) return;
+
+                      try {
+                        await api.delete(`/gigs/${gig._id}`);
+                        fetchMyGigs();
+                      } catch {
+                        setError("Delete failed");
+                      }
+                    }}
+                    className="border border-red-500 text-red-400 px-4 py-2 hover:bg-red-500 hover:text-black transition"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
+
+              {/* Edit Form */}
               {editingGig === gig._id && (
-                <div className="mt-6 border border-zinc-800 p-6 space-y-4 bg-black">
-                  <input
-                    value={editForm.title}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, title: e.target.value })
-                    }
-                    className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
-                    placeholder="Title"
-                  />
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-6 border border-zinc-800 p-6 space-y-4 bg-black">
+                    <input
+                      value={editForm.title}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, title: e.target.value })
+                      }
+                      className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
+                      placeholder="Title"
+                    />
 
-                  <textarea
-                    value={editForm.description}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, description: e.target.value })
-                    }
-                    className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
-                    rows={3}
-                    placeholder="Description"
-                  />
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          description: e.target.value,
+                        })
+                      }
+                      className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
+                      rows={3}
+                      placeholder="Description"
+                    />
 
-                  <input
-                    type="number"
-                    value={editForm.budget}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, budget: e.target.value })
-                    }
-                    className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
-                    placeholder="Budget"
-                  />
+                    <input
+                      type="number"
+                      value={editForm.budget}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, budget: e.target.value })
+                      }
+                      className="w-full bg-zinc-900 border border-zinc-700 px-4 py-2"
+                      placeholder="Budget"
+                    />
 
-                  <div className="flex gap-3">
-                    <button
-                      onClick={async () => {
-                        try {
-                          await api.patch(`/gigs/${gig._id}`, editForm);
-                          setEditingGig(null);
-                          fetchMyGigs();
-                        } catch {
-                          setError("Update failed");
-                        }
-                      }}
-                      className="bg-yellow-400 text-black px-4 py-2 font-bold"
-                    >
-                      Save
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={async () => {
+                          try {
+                            await api.patch(`/gigs/${gig._id}`, editForm);
+                            setEditingGig(null);
+                            fetchMyGigs();
+                          } catch {
+                            setError("Update failed");
+                          }
+                        }}
+                        className="bg-yellow-400 text-black px-4 py-2 font-bold hover:bg-yellow-300"
+                      >
+                        Save
+                      </button>
 
-                    <button
-                      onClick={() => setEditingGig(null)}
-                      className="border border-zinc-600 px-4 py-2"
-                    >
-                      Cancel
-                    </button>
+                      <button
+                        onClick={() => setEditingGig(null)}
+                        className="border border-zinc-600 px-4 py-2 hover:bg-zinc-800"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               )}
 
-              {/* Animated Bids */}
+              {/* Bids Section */}
               <AnimatePresence>
                 {openGig === gig._id && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    transition={{ duration: 0.35 }}
                     className="overflow-hidden"
                   >
                     <div className="mt-6 space-y-4">
@@ -189,7 +227,7 @@ export default function MyGigs() {
                         bids[gig._id].map((bid) => (
                           <motion.div
                             key={bid._id}
-                            initial={{ opacity: 0, y: 10 }}
+                            initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.25 }}
                             className="border border-zinc-800 p-5 flex justify-between items-center"
@@ -206,7 +244,9 @@ export default function MyGigs() {
 
                             {bid.status === "pending" && (
                               <button
-                                onClick={() => hireBid(bid._id)}
+                                onClick={() =>
+                                  hireBid(bid._id, gig._id)
+                                }
                                 className="bg-yellow-400 text-black font-bold px-4 py-2 hover:bg-yellow-300"
                               >
                                 HIRE
