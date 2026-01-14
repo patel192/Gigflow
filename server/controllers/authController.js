@@ -8,8 +8,8 @@ const generateToken = (res, userId) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true,       // MUST be true in production (HTTPS)
-    sameSite: "None",   // REQUIRED for cross-site cookies (Vercel + Render)
+    secure: true, // MUST be true in production (HTTPS)
+    sameSite: "None", // REQUIRED for cross-site cookies (Vercel + Render)
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
@@ -42,7 +42,6 @@ export const registerUser = async (req, res) => {
         email: user.email,
       },
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -71,7 +70,6 @@ export const loginUser = async (req, res) => {
     } else {
       res.status(401).json({ message: "Invalid credentials" });
     }
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -83,8 +81,6 @@ export const loginUser = async (req, res) => {
 export const logoutUser = (req, res) => {
   res.cookie("token", "", {
     httpOnly: true,
-    secure: true,
-    sameSite: "None",
     expires: new Date(0),
   });
 

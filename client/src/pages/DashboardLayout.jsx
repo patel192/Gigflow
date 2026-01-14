@@ -25,10 +25,15 @@ export default function DashboardLayout() {
         : "text-zinc-300 hover:bg-zinc-900 hover:text-yellow-400"
     }`;
 
-  const handleLogout = () => {
-    logout();
-    toast.success("Logged out successfully");
-    navigate("/login");
+  // ✅ Proper cookie-based logout
+  const handleLogout = async () => {
+    try {
+      await logout(); // calls backend /auth/logout
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch {
+      toast.error("Logout failed");
+    }
   };
 
   return (
