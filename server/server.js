@@ -14,22 +14,27 @@ connectDB();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin:true,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://gigflow-frontend-gamma.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 
 app.use("/api/gigs", gigRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/bids",bidRoutes);
-app.get("/api/test-protected",protect,(req,res)=>{
-    res.json({
-        message:"You are authorized",
-        user:req.user
-    });
+app.use("/api/bids", bidRoutes);
+app.get("/api/test-protected", protect, (req, res) => {
+  res.json({
+    message: "You are authorized",
+    user: req.user,
+  });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT,()=>{
-    console.log(`Server running on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
